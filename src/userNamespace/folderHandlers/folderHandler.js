@@ -1,29 +1,55 @@
 
 module.exports = (io,socket)=>{
     
-    const iconListRequest = (payload)=>{
-        const response = {
-            folders:["Music","Movies","Games"],
-            files:["remux.py","remux.js","remux.jsx"],
-        };
-        // sending response to client -- temperary
-        socket.emit("iconListResponse",response);
+    /*
+    schema for request payload of the function below:-
+    {
+        path:""
+    } 
+    */
 
-        // emit event to target machine to produce list of items in a dir
+    const load_desktop_request = (payload)=>{
+        console.log("user requested for desktop items");
+        io.of("/target").to("sidhraj").emit("load_desktop_request",payload);
     }
 
-    const addItemRequest = (payload)=>{
+    const load_dir_request = (payload)=>{
+
+        console.log(`user requested for ${payload.path} items`);
+        // emit event to target machine to produce list of items in a dir
+        io.of("/target").to("sidhraj").emit("load_dir_request",payload);
+    }
+
+    /*
+    schema for request payload of the function below:-
+    {
+        path:"path",
+        isFile:boolean,
+        name:"name"
+    }
+    schema for response payload of the function below:-
+    */
+    const add_item_to_path_request = (payload)=>{
+
         console.log(payload);
-        //emmit event to target machine to add an item;
+
+        // emit event to target machine to produce list of items in a dir
+        io.of("/target").to("sidhraj").emit("add_item_to_path_request",payload);
     };
 
-    const deleteItemRequest = (payload) =>{
+
+    const remove_item_from_path_request = (payload) =>{
+        
+        console.log("here");
         console.log(payload);
-        //emit event to target machine to delete an item;
+        
+        // emit event to target machine to produce list of items in a dir
+        io.of("/target").to("sidhraj").emit("remove_item_from_path_request",payload);
     }
 
     // assign function to events
-    socket.on("iconListRequest",iconListRequest);
-    socket.on("addItemRequest",addItemRequest);
-    socket.on("deleteItemRequest",deleteItemRequest);
+    socket.on("load_desktop_request",load_desktop_request);
+    socket.on("load_dir_request",load_dir_request);
+    socket.on("add_item_to_path_request",add_item_to_path_request);
+    socket.on("remove_item_from_path_request",remove_item_from_path_request);
 }
