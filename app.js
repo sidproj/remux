@@ -19,12 +19,14 @@ app.get("/",(req,res)=>{
 // user handlers
 const registerUserAuthHandlers = require("./src/userNamespace/authHandlers/authHandlers");
 const registerUserFolderHandlers = require("./src/userNamespace/folderHandlers/folderHandler");
-const regusterUserFileHandlers = require("./src/userNamespace/fileHandlers/fileHandler")
+const regusterUserFileHandlers = require("./src/userNamespace/fileHandlers/fileHandler");
+const registerUserTerminalHandlers = require("./src/userNamespace/terminalHandler/terminalHandler");
 
 // terget mamchine handlers
 const registerTargetAuthHandlers = require("./src/targetNamespace/authHandlers/authHandler");
 const registerTargetFolderHandlers = require("./src/targetNamespace/folderHandlers/folderHandler");
 const registerTargetFileHandlers = require("./src/targetNamespace/fileHandlers/fileHandler");
+const registerTargetTreminalHandlers = require("./src/targetNamespace/terminalHandlers/terminalHandler");
 
 // namespaces for target machines and users
 const targetIO = io.of("/target");
@@ -41,6 +43,7 @@ targetIO.on("connection",(socket)=>{
     registerTargetAuthHandlers(io,socket);
     registerTargetFolderHandlers(io,socket);
     registerTargetFileHandlers(io,socket);
+    registerTargetTreminalHandlers(io,socket);
 
     // on disconnect
     socket.on('disconnect', function () {
@@ -60,7 +63,8 @@ userIO.on("connection",(socket)=>{
     registerUserAuthHandlers(io,socket);
     registerUserFolderHandlers(io,socket);
     regusterUserFileHandlers(io,socket);
-    
+    registerUserTerminalHandlers(io,socket);
+
     // on disconnect
     socket.on('disconnect', function () {
         console.log('A user disconnected');

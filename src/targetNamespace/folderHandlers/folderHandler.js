@@ -9,6 +9,7 @@ module.exports = (io,socket)=>{
     const load_dir_response = (payload)=>{
 
         console.log(`target responded with ${payload.path} items`);
+        console.log(payload);
         io.of("/user").to('sidhraj').emit("load_dir_response",payload);
 
     }
