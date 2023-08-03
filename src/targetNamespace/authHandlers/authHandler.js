@@ -1,22 +1,34 @@
+const User = require("../../models/user");
+
 module.exports = (io,socket)=>{
 
-    const login_request = (payload)=>{
-        const res = {success : false};
-        if(payload.username == "sidhraj" && payload.password == "1234"){
-            res.success = true;
-        }
-        socket.emit("login_response",res);
-        if(!res.success){
+    const login_request = async(payload)=>{
+
+        console.log(payload);
+
+        try{
+
+            const email = payload.email;
+            const password = payload.password;
+
+            const user = await User.login(email,password);
+            socket.user = user;
+
+            socket.join(socket.user.id);
+            
+            socket.emit("loginResponse",{success:true});
+
+        }catch(error){
+            console.log(error);
+            socket.emit("loginResponse",{success:false,message:error.message});
             socket.disconnect();
-        }else{
-            socket.join("sidhraj");
         }
     }
 
     const logout_request = (payload) => {
 
         //  emit event to user that target is logging out,
-        io.of("/user").to("sidhraj").emit("target_logout",payload);
+        io.of("/user").to(socket.user.id).emit("target_logout",payload);
         socket.disconnect();
     }
 

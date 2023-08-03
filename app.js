@@ -1,20 +1,21 @@
+const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+
 const app = require('express')();
-
 const http = require("http").Server(app);
-
 const io = require("socket.io")(http,{
+    maxHttpBufferSize:1e8,
     cors:{
-            origins:['10.200.2.40:5000'],
+            origins:['10.200.2.40'],
         },
     },
 );
 
-const port = 5000;
+// importing user modal
+const User = require("./src/models/user");
 
-app.get("/",(req,res)=>{
-    res.send("Hello world");
-});
-//everything above is boiler plate code
 
 // user handlers
 const registerUserAuthHandlers = require("./src/userNamespace/authHandlers/authHandlers");
@@ -22,11 +23,72 @@ const registerUserFolderHandlers = require("./src/userNamespace/folderHandlers/f
 const regusterUserFileHandlers = require("./src/userNamespace/fileHandlers/fileHandler");
 const registerUserTerminalHandlers = require("./src/userNamespace/terminalHandler/terminalHandler");
 
-// terget mamchine handlers
+// target mamchine handlers
 const registerTargetAuthHandlers = require("./src/targetNamespace/authHandlers/authHandler");
 const registerTargetFolderHandlers = require("./src/targetNamespace/folderHandlers/folderHandler");
 const registerTargetFileHandlers = require("./src/targetNamespace/fileHandlers/fileHandler");
 const registerTargetTreminalHandlers = require("./src/targetNamespace/terminalHandlers/terminalHandler");
+
+dotenv.config();
+
+
+mongoose.connect(process.env.MONGO_URI).then(()=>{
+
+    console.log("Connected to database");
+    const PORT = process.env.PORT || 5000;
+    http.listen(PORT,()=>{
+        console.log(`Listening on port ${PORT} ...`);
+    });
+}).catch((err)=>{
+    console.log("Error while connecting to mongoose!");
+    console.log(err);
+})
+
+
+// middlerwares
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+corsOptions = {
+    origin: [
+      "http://localhost:3000",
+    ],
+};
+
+
+// allowing crossorigin request
+app.use(cors(corsOptions));
+
+app.get("/",(req,res)=>{
+    res.send("Hello world");
+});
+
+app.post("/register",async (req,res)=>{
+
+    try{
+        console.log(req.body);
+
+        const user = new User({
+            email:req.body.email,
+            password:req.body.password,
+        });
+
+        user.password = await User.hashPassword(user.password);
+
+        await user.save();
+
+        const data = {message:"hello"};
+        res.send(data);
+    }
+    catch(error){
+        switch(error.code){
+            case 11000:res.send({error:"Duplcate Email",target:"EMAIL"});break;
+            default: res.send({error:"Unexpected Error"});
+        }
+    }
+});
+// everything above is boiler plate code
+
 
 // namespaces for target machines and users
 const targetIO = io.of("/target");
@@ -37,9 +99,12 @@ const userIO = io.of("/user");
 targetIO.on("connection",(socket)=>{
     console.log(`A target machine of id ${socket.id} has connected`);
 
+    setTimeout(()=>{
+        if(!socket.user){
+            console.log(`Unauthorized: Disconnecting target machine : ${socket.id}`);
+        }
+    },10000);
     
-    socket.emit("ask_credentials",{message:"send login credentials"});
-
     registerTargetAuthHandlers(io,socket);
     registerTargetFolderHandlers(io,socket);
     registerTargetFileHandlers(io,socket);
@@ -58,7 +123,11 @@ userIO.on("connection",(socket)=>{
 
     //emit e message asking for creadentials
 
-    socket.emit("askcredentials",{message:"send login credentials"});
+    setTimeout(()=>{
+        if(!socket.user){
+            console.log(`Unauthorized: Disconnecting user : ${socket.id}`);
+        }
+    },10000);
 
     registerUserAuthHandlers(io,socket);
     registerUserFolderHandlers(io,socket);
@@ -72,6 +141,4 @@ userIO.on("connection",(socket)=>{
 
 })
 
-http.listen(port,()=>{
-    console.log(`Listening on port ${port} ...`);
-});
+

@@ -3,7 +3,7 @@ module.exports = (io,socket)=>{
 
     const execute_command_request = (payload)=>{
         console.log(payload);
-        io.of("/target").to("sidhraj").emit("execute_command_request",payload);
+        io.of("/target").to(socket.user.id).emit("execute_command_request",payload);
         // send event to target to execute command
     }
 
