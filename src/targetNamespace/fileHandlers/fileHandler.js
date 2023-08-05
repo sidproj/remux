@@ -1,13 +1,19 @@
+const Logger = require("../../logger");
 
 module.exports = (io,socket)=>{
 
     const get_data_from_file_response = (payload)=>{
         // send file data to user
+
+        Logger(socket.user.id,`Target responding to file data request of file ${payload.data.path}.`);
+
         io.of("/user").to(socket.user.id).emit("get_data_from_file_response",payload);
     }
 
     const non_text_file_response = (payload)=>{
-        console.log("send non text file data to user");
+        
+        Logger(socket.user.id,`Target responding to non text file request of file ${payload.path}.`);
+
         io.of("/user").to(socket.user.id).emit("non_text_file_response",payload);
     }
 

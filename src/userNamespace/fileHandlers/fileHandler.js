@@ -1,20 +1,29 @@
+const Logger = require("../../logger");
 
 module.exports = (io,socket)=>{
     
     const get_data_from_file_request = (payload)=>{
         
         // emit an event to target to get file data
+
+        Logger(socket.user.id,`User requesting to get data from file ${payload.path}.`);
+
         io.of("/target").to(socket.user.id).emit("get_data_from_file_request",payload);
     };
 
     const set_data_to_file_request = (payload)=>{
         
         // emit an event to target to set data of a file
+
+        Logger(socket.user.id,`User requesting to set data to file ${payload.path}.`);
+
         io.of("/target").to(socket.user.id).emit("set_data_to_file_request",payload);
     }
 
     const non_text_file_request = (payload)=>{
-        console.log("asking for non text file data from target");
+
+        Logger(socket.user.id,`User requesting data from not text file ${payload.path}.`);
+
         io.of("/target").to(socket.user.id).emit("non_text_file_request",payload);
     }
 

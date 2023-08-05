@@ -1,4 +1,5 @@
 const  User = require("../../models/user");
+const Logger = require("../../logger");
 
 module.exports = (io,socket)=>{
 
@@ -10,6 +11,9 @@ module.exports = (io,socket)=>{
             const password = payload.password;
 
             const user = await User.login(email,password);
+
+            Logger(user.id,"User logged in from browser.");
+
             socket.user  = user;
 
             socket.join(socket.user.id);
@@ -23,7 +27,11 @@ module.exports = (io,socket)=>{
     }
 
     const logout_request = (payload)=>{
-        io.of("/target").to(socket.user.id).emit("user_logout",payload);
+        console.log("User disconnecting...");
+
+        Logger(socket.user.id,"User logged out from browser.");
+
+        io.of("/target").to(socket.user.id).emit("logout_request",payload);
         socket.disconnect();
     }
 

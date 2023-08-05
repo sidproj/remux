@@ -1,3 +1,4 @@
+const Logger = require("../../logger");
 
 module.exports = (io,socket)=>{
     
@@ -9,13 +10,15 @@ module.exports = (io,socket)=>{
     */
 
     const load_desktop_request = (payload)=>{
-        console.log("user requested for desktop items");
+        
+        Logger(socket.user.id,`User requesting directory data of desktop.`);
+
         io.of("/target").to(socket.user.id).emit("load_desktop_request",payload);
     }
 
     const load_dir_request = (payload)=>{
 
-        console.log(`user requested for ${payload.path} items`);
+        Logger(socket.user.id,`User requesting directory data of ${payload.path}.`);
         // emit event to target machine to produce list of items in a dir
         io.of("/target").to(socket.user.id).emit("load_dir_request",payload);
     }
@@ -31,28 +34,30 @@ module.exports = (io,socket)=>{
     */
     const add_item_to_path_request = (payload)=>{
 
-        console.log(payload);
+        Logger(socket.user.id,`User requesting to add file/folder to path ${payload.path}.`);
 
         // emit event to target machine to produce list of items in a dir
         io.of("/target").to(socket.user.id).emit("add_item_to_path_request",payload);
     };
 
     const rename_item_request = (payload)=>{
-        console.log(payload);
+
+        Logger(socket.user.id,`User requesting to rename ${payload.oldName} to ${payload.newName}.`);
 
         io.of("/target").to(socket.user.id).emit("rename_item_request",payload);
     }
 
     const remove_item_from_path_request = (payload) =>{
         
-        console.log(`user requested to remove ${payload.path}`);
+        Logger(socket.user.id,`User requesting to remove file/folder to path ${payload.path}.`);
         
         // emit event to target machine to produce list of items in a dir
         io.of("/target").to(socket.user.id).emit("remove_item_from_path_request",payload);
     }
 
     const properties_of_path_request = (payload)=>{
-        console.log(payload);
+        
+        Logger(socket.user.id,`User requesting for properties of ${payload.parent}/${payload.name}.`);
 
         io.of("/target").to(socket.user.id).emit("properties_of_path_request",payload)
     }

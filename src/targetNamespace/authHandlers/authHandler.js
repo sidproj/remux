@@ -1,10 +1,9 @@
 const User = require("../../models/user");
+const Logger = require("../../logger");
 
 module.exports = (io,socket)=>{
 
     const login_request = async(payload)=>{
-
-        console.log(payload);
 
         try{
 
@@ -16,6 +15,9 @@ module.exports = (io,socket)=>{
 
             socket.join(socket.user.id);
             
+
+            Logger(user.id,"User logged in from target machine.");
+
             socket.emit("loginResponse",{success:true});
 
         }catch(error){
